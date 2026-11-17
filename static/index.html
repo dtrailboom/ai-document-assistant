@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Document Assistant</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="/static/script.js" defer></script>
+</head>
+<body>
+    <main class="app">
+        <header class="header">
+            <div>
+                <h1>AI Document Assistant</h1>
+                <p>Local AI · Qwen3 · ChromaDB</p>
+            </div>
+            <span class="status">Local AI</span>
+        </header>
+
+        <section id="chat" class="chat" aria-live="polite">
+            <div class="message assistant">
+                <strong>Assistant</strong>
+                <p>
+                    Hello! Ask me a question about your
+                    indexed PDF documents.
+                </p>
+            </div>
+        </section>
+
+        <form id="chat-form" class="chat-form">
+            <input
+                id="question"
+                type="text"
+                placeholder="Ask a question about your documents..."
+                autocomplete="off"
+                required
+            >
+            <button id="send-button" type="submit">
+                Send
+            </button>
+        </form>
+
+        <footer>
+            Running locally with Ollama and FastAPI
+        </footer>
+    </main>
+</body>
+</html>

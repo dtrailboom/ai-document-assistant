@@ -3,6 +3,8 @@ from pathlib import Path
 import chromadb
 import ollama
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 BASE_DIR = Path(__file__).parent
@@ -14,7 +16,13 @@ EMBEDDING_MODEL = "nomic-embed-text"
 app = FastAPI(
     title="AI Document Assistant API",
     description="Local RAG assistant using Ollama and ChromaDB",
-    version="4.2"
+    version="4.3"
+)
+
+app.mount(
+    "/static",
+    StaticFiles(directory=str(BASE_DIR / "static")),
+    name="static"
 )
 
 
@@ -38,9 +46,7 @@ def get_embedding(text):
 
 @app.get("/")
 def home():
-    return {
-        "message": "AI Document Assistant API is running"
-    }
+    return FileResponse(BASE_DIR / "static" / "index.html")
 
 
 @app.get("/health")
