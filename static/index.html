@@ -3,23 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>AI Document Assistant</title>
+
     <link rel="stylesheet" href="/static/style.css">
     <script src="/static/script.js" defer></script>
 </head>
+
 <body>
     <main class="app">
+
+        <!-- Header -->
         <header class="header">
             <div>
                 <h1>AI Document Assistant</h1>
                 <p>Local AI · Qwen3 · ChromaDB</p>
             </div>
+
             <span class="status">Local AI</span>
         </header>
 
-        <section id="chat" class="chat" aria-live="polite">
+        <!-- PDF Upload -->
+        <section class="upload-section">
+            <h2>Upload PDF</h2>
+
+            <form id="upload-form">
+                <input
+                    type="file"
+                    id="pdf-file"
+                    accept=".pdf,application/pdf"
+                    required
+                >
+
+                <button type="submit" id="upload-button">
+                    Upload &amp; Index
+                </button>
+            </form>
+
+            <p id="upload-status" role="status"></p>
+        </section>
+
+        <!-- Chat Messages -->
+        <section
+            id="chat"
+            class="chat"
+            aria-live="polite"
+        >
             <div class="message assistant">
                 <strong>Assistant</strong>
+
                 <p>
                     Hello! Ask me a question about your
                     indexed PDF documents.
@@ -27,22 +59,27 @@
             </div>
         </section>
 
+        <!-- Chat Input -->
         <form id="chat-form" class="chat-form">
             <input
                 id="question"
                 type="text"
                 placeholder="Ask a question about your documents..."
                 autocomplete="off"
+                aria-label="Your question"
                 required
             >
+
             <button id="send-button" type="submit">
                 Send
             </button>
         </form>
 
+        <!-- Footer -->
         <footer>
             Running locally with Ollama and FastAPI
         </footer>
+
     </main>
 </body>
 </html>

@@ -3,7 +3,7 @@ from pathlib import Path
 
 import chromadb
 import ollama
-from chromadb.errors import NotFoundError
+
 
 BASE_DIR = Path(__file__).parent
 CHUNKS_FILE = BASE_DIR / "chunks.json"
@@ -21,57 +21,62 @@ def get_embedding(text):
     return response["embeddings"][0]
 
 
-# 1. Load document chunks
-with open(CHUNKS_FILE, encoding="utf-8") as file:
-    chunks = json.load(file)
+def index_chunks(chunks):
+    """Add document chunks to ChromaDB."""
 
-if not chunks:
-    raise SystemExit("No chunks found. Run chunk_documents.py first.")
-
-print(f"Loaded {len(chunks)} chunks.")
-
-
-# 2. Connect to local database
-client = chromadb.PersistentClient(path=str(DATABASE_DIR))
-
-# Rebuild the collection for a clean index
-try:
-    client.delete_collection(COLLECTION_NAME)
-except NotFoundError:
-    pass
-
-collection = client.get_or_create_collection(
-    name=COLLECTION_NAME,
-    metadata={"hnsw:space": "cosine"}
-)
-
-
-# 3. Create embeddings and store chunks
-for index, chunk in enumerate(chunks, start=1):
-    text = chunk["text"]
-
-    embedding = get_embedding(text)
-
-    document_id = (
-        f"{chunk['source']}_"
-        f"page{chunk['page']}_"
-        f"chunk{chunk['chunk_id']}"
+    client = chromadb.PersistentClient(
+        path=str(DATABASE_DIR)
     )
 
-    collection.add(
-        ids=[document_id],
-        documents=[text],
-        embeddings=[embedding],
-        metadatas=[{
-            "source": chunk["source"],
-            "page": chunk["page"],
-            "chunk_id": chunk["chunk_id"]
-        }]
+    collection = client.get_or_create_collection(
+        name=COLLECTION_NAME,
+        metadata={"hnsw:space": "cosine"}
     )
 
-    print(f"Indexed {index}/{len(chunks)}")
+    for index, chunk in enumerate(chunks, start=1):
+        text = chunk["text"]
+
+        embedding = get_embedding(text)
+
+        document_id = (
+            f"{chunk['source']}_"
+            f"page{chunk['page']}_"
+            f"chunk{chunk['chunk_id']}"
+        )
+
+        collection.upsert(
+            ids=[document_id],
+            documents=[text],
+            embeddings=[embedding],
+            metadatas=[{
+                "source": chunk["source"],
+                "page": chunk["page"],
+                "chunk_id": chunk["chunk_id"]
+            }]
+        )
+
+        print(f"Indexed {index}/{len(chunks)}")
+
+    print("\nIndexing complete!")
+    print(f"Documents stored: {collection.count()}")
+
+    return len(chunks)
 
 
-print("\nIndexing complete!")
-print(f"Documents stored: {collection.count()}")
-print(f"Database location: {DATABASE_DIR}")
+def main():
+    """Index chunks stored in chunks.json."""
+
+    with open(CHUNKS_FILE, encoding="utf-8") as file:
+        chunks = json.load(file)
+
+    if not chunks:
+        print("No chunks found.")
+        return
+
+    print(f"Loaded {len(chunks)} chunks.")
+
+    index_chunks(chunks)
+
+
+if __name__ == "__main__":
+    main()

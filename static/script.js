@@ -93,3 +93,57 @@ form.addEventListener("submit", async (event) => {
         input.focus();
     }
 });
+
+
+// PDF upload
+
+const uploadForm = document.getElementById("upload-form");
+const pdfFile = document.getElementById("pdf-file");
+const uploadButton = document.getElementById("upload-button");
+const uploadStatus = document.getElementById("upload-status");
+
+uploadForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const file = pdfFile.files[0];
+
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+        uploadStatus.textContent = "Maximum file size is 10 MB.";
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    uploadButton.disabled = true;
+    uploadStatus.textContent = "Uploading and indexing PDF...";
+
+    try {
+        const response = await fetch("/upload", {
+            method: "POST",
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                data.detail || "Upload failed."
+            );
+        }
+
+        uploadStatus.textContent =
+            `Success! ${data.filename} indexed ` +
+            `(${data.pages} pages, ${data.chunks} chunks).`;
+
+        pdfFile.value = "";
+
+    } catch (error) {
+        uploadStatus.textContent =
+            `Error: ${error.message}`;
+    } finally {
+        uploadButton.disabled = false;
+    }
+});
