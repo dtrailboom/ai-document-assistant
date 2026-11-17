@@ -2,89 +2,115 @@
 
 
 
-A privacy-focused, locally running AI assistant built with Python, Ollama, and Qwen3.
+\*\*A privacy-focused, local AI application for chatting with PDF documents using Retrieval-Augmented Generation (RAG).\*\*
 
 
 
-\## Project Overview
+Built with \*\*Python, FastAPI, Ollama, Qwen3 and ChromaDB\*\* — without external AI APIs.
 
 
 
-This project explores local Large Language Models (LLMs) and their integration into practical applications.
+\## Features
 
 
 
-The goal is to develop an AI-powered document assistant capable of answering questions about uploaded documents using Retrieval-Augmented Generation (RAG).
+\- \*\*Local AI:\*\* Run Qwen3 through Ollama without cloud inference.
+
+\- \*\*PDF Upload:\*\* Upload and automatically index PDF documents.
+
+\- \*\*RAG Search:\*\* Retrieve relevant document passages using vector embeddings.
+
+\- \*\*AI Chat:\*\* Ask questions and receive context-aware answers.
+
+\- \*\*Source References:\*\* Display document names, page numbers and retrieval distances.
+
+\- \*\*Web Interface:\*\* Browser-based chat and PDF upload.
+
+\- \*\*Persistent Storage:\*\* Store document embeddings locally in ChromaDB.
 
 
 
-All AI inference runs locally through Ollama.
+\## Tech Stack
 
 
 
-\## Current Features
+| Component | Technology |
+
+|---|---|
+
+| Language | Python |
+
+| Backend | FastAPI |
+
+| LLM | Qwen3 1.7B |
+
+| Model Runtime | Ollama |
+
+| Embeddings | nomic-embed-text |
+
+| Vector Database | ChromaDB |
+
+| PDF Processing | PyMuPDF |
+
+| Frontend | HTML, CSS, JavaScript |
 
 
 
-\- Local LLM inference using Ollama
-
-\- Qwen3 1.7B integration
-
-\- Interactive Python chat
-
-\- Conversation history
-
-\- Persistent chat history using JSON
-
-\- Clear and history commands
-
-\- No cloud AI API required
+\## Quick Start
 
 
 
-\## Technologies
+\*\*1. Install dependencies\*\*
 
 
 
-\- Python
+```bash
 
-\- Ollama
+pip install -r requirements.txt
 
-\- Qwen3
-
-\- JSON
-
-\- Git and GitHub
+```
 
 
 
-\## Installation
+\*\*2. Download the AI models\*\*
 
 
 
-1\. Install Python and Ollama.
+```bash
 
-2\. Download the model:
+ollama pull qwen3:1.7b
 
+ollama pull nomic-embed-text
 
-
-&#x20;  ollama pull qwen3:1.7b
-
-
-
-3\. Install Python dependencies:
+```
 
 
 
-&#x20;  pip install -r requirements.txt
+\*\*3. Start the application\*\*
 
 
 
-4\. Start the application:
+```bash
+
+python -m uvicorn api:app --reload
+
+```
 
 
 
-&#x20;  python app.py
+\*\*4. Open the web interface\*\*
+
+
+
+http://127.0.0.1:8000
+
+
+
+Upload a PDF, wait for indexing, and start asking questions.
+
+
+
+\*Prerequisites: Python and Ollama installed, with Ollama running.\*
 
 
 
@@ -94,19 +120,19 @@ All AI inference runs locally through Ollama.
 
 \- \[x] Local LLM integration
 
-\- \[x] Interactive chat
+\- \[x] Interactive chat and conversation history
 
-\- \[x] Conversation history
+\- \[x] PDF extraction and text chunking
 
-\- \[x] Persistent JSON storage
+\- \[x] RAG with embeddings and vector search
 
-\- \[ ] PDF document processing
+\- \[x] FastAPI backend and web interface
 
-\- \[ ] RAG with embeddings and vector search
+\- \[x] PDF upload with automatic indexing
 
-\- \[ ] FastAPI backend
+\- \[ ] Document selection and management
 
-\- \[ ] Web interface
+\- \[ ] Improved retrieval and answer quality
 
 \- \[ ] Docker deployment
 
@@ -118,27 +144,13 @@ All AI inference runs locally through Ollama.
 
 
 
-The assistant runs locally using Ollama.
+AI inference, document processing and vector storage run locally. Uploaded PDFs, the vector database and local chat history are excluded from Git.
 
 
 
-Conversation history is stored locally in
-
-chat\_history.json and excluded from Git.
+\*\*Status:\*\* Version 4.4 — Functional local RAG document assistant.
 
 
 
-\## Project Status
-
-
-
-Version 2.1 - Local AI chat with persistent memory.
-
-
-
-This is an ongoing educational project focused on
-
-Generative AI, local LLM deployment, and RAG.
-
-
+\*An ongoing hands-on project exploring local LLMs, AI engineering and practical RAG applications.\*
 
