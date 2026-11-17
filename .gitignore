@@ -3,3 +3,6 @@ chat_history.json
 __pycache__/
 .venv/
 .env
+documents/
+chunks.json
+chroma_db/
