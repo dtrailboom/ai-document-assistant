@@ -33,7 +33,7 @@ MAX_UPLOAD_SIZE = 10 * 1024 * 1024  # 10 MB
 app = FastAPI(
     title="AI Document Assistant API",
     description="Local RAG assistant using Ollama and ChromaDB",
-    version="4.4"
+    version="4.5"
 )
 
 app.mount(
@@ -49,7 +49,7 @@ app.mount(
 
 class QuestionRequest(BaseModel):
     question: str = Field(min_length=1)
-
+    document: str | None = None
 
 # --------------------------------------------------
 # ChromaDB connection
@@ -100,6 +100,41 @@ def health():
 
 
 # --------------------------------------------------
+# Document list
+# --------------------------------------------------
+
+@app.get("/documents")
+def list_documents():
+    """Return all indexed PDF document names."""
+
+    try:
+        collection = client.get_collection("documents")
+
+        # Retrieve metadata from ChromaDB
+        results = collection.get(
+            include=["metadatas"]
+        )
+
+        # Extract unique document names
+        document_names = set()
+
+        for metadata in results["metadatas"]:
+            if metadata and "source" in metadata:
+                document_names.add(metadata["source"])
+
+        return {
+            "documents": sorted(document_names),
+            "count": len(document_names)
+        }
+
+    except chromadb.errors.NotFoundError:
+        # No document collection exists yet
+        return {
+            "documents": [],
+            "count": 0
+        }
+
+# --------------------------------------------------
 # RAG question answering
 # --------------------------------------------------
 
@@ -129,15 +164,43 @@ def ask(request: QuestionRequest):
         embedding = get_embedding(question)
 
         # 2. Retrieve relevant document chunks
-        results = collection.query(
-            query_embeddings=[embedding],
-            n_results=min(3, count),
-            include=[
+        
+        # Optional: restrict search to one PDF
+        selected_document = request.document
+
+        query_options = {
+            "query_embeddings": [embedding],
+            "n_results": min(3, count),
+            "include": [
                 "documents",
                 "metadatas",
                 "distances"
             ]
-        )
+        }
+
+        if selected_document:
+            matching_chunks = collection.get(
+                where={"source": selected_document},
+                include=[]
+            )
+
+            matching_count = len(matching_chunks["ids"])
+
+            if matching_count == 0:
+                raise HTTPException(
+                    status_code=404,
+                    detail="Selected document was not found."
+                )
+
+            query_options["where"] = {
+                "source": selected_document
+            }
+            query_options["n_results"] = min(
+                3,
+                matching_count
+            )
+
+        results = collection.query(**query_options)
 
         documents = results["documents"][0]
         metadatas = results["metadatas"][0]

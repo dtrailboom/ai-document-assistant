@@ -65,7 +65,10 @@ form.addEventListener("submit", async (event) => {
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({ question })
+            body: JSON.stringify({
+    		question,
+    		document: documentSelect.value || null
+	    })
         });
 
         if (!response.ok) {
@@ -139,6 +142,7 @@ uploadForm.addEventListener("submit", async (event) => {
             `(${data.pages} pages, ${data.chunks} chunks).`;
 
         pdfFile.value = "";
+	await loadDocuments();
 
     } catch (error) {
         uploadStatus.textContent =
@@ -147,3 +151,61 @@ uploadForm.addEventListener("submit", async (event) => {
         uploadButton.disabled = false;
     }
 });
+
+
+//
+// Version 4.5 - Document Selection
+//
+
+const documentSelect = document.getElementById("document-select");
+
+// Load indexed PDF documents from FastAPI
+async function loadDocuments() {
+    try {
+        const response = await fetch("/documents");
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        // Remember selected document
+        const selectedDocument = documentSelect.value;
+
+        // Clear existing options
+        documentSelect.innerHTML = "";
+
+        // Default option: all documents
+        const allOption = document.createElement("option");
+        allOption.value = "";
+        allOption.textContent = "All documents";
+        documentSelect.appendChild(allOption);
+
+        // Add indexed PDFs
+        for (const filename of data.documents) {
+            const option = document.createElement("option");
+
+            option.value = filename;
+            option.textContent = filename;
+
+            documentSelect.appendChild(option);
+        }
+
+        // Restore previous selection
+        const documentExists = Array.from(
+            documentSelect.options
+        ).some(option => option.value === selectedDocument);
+
+        if (documentExists) {
+            documentSelect.value = selectedDocument;
+        }
+
+    } catch (error) {
+        console.error("Could not load documents:", error);
+    }
+}
+
+// Load document list when page opens
+loadDocuments();
+
