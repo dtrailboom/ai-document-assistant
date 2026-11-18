@@ -6,3 +6,9 @@ __pycache__/
 documents/
 chunks.json
 chroma_db/
+
+# Local backup files
+api_backup_*.py
+
+# Temporary test files
+delete_test.pdf
