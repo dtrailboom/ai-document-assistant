@@ -26,9 +26,12 @@ function addMessage(role, text, sources = []) {
 
         for (const source of sources) {
             const line = document.createElement("div");
+
             line.textContent =
-                `${source.document}, page ${source.page} ` +
+                `[${source.number}] ${source.document}, ` +
+                `page ${source.page} ` +
                 `(distance: ${source.distance})`;
+
             sourceBox.appendChild(line);
         }
 
@@ -40,6 +43,11 @@ function addMessage(role, text, sources = []) {
 
     return message;
 }
+
+
+// --------------------------------------------------
+// Chat - Ask questions
+// --------------------------------------------------
 
 form.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -66,9 +74,9 @@ form.addEventListener("submit", async (event) => {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-    		question,
-    		document: documentSelect.value || null
-	    })
+                question,
+                document: documentSelect.value || null
+            })
         });
 
         if (!response.ok) {
@@ -78,6 +86,7 @@ form.addEventListener("submit", async (event) => {
         const data = await response.json();
 
         loadingMessage.remove();
+
         addMessage(
             "assistant",
             data.answer,
@@ -86,10 +95,12 @@ form.addEventListener("submit", async (event) => {
 
     } catch (error) {
         loadingMessage.remove();
+
         addMessage(
             "assistant",
             `Error: ${error.message}`
         );
+
     } finally {
         input.disabled = false;
         sendButton.disabled = false;
@@ -98,7 +109,9 @@ form.addEventListener("submit", async (event) => {
 });
 
 
-// PDF upload
+// --------------------------------------------------
+// PDF Upload
+// --------------------------------------------------
 
 const uploadForm = document.getElementById("upload-form");
 const pdfFile = document.getElementById("pdf-file");
@@ -142,26 +155,27 @@ uploadForm.addEventListener("submit", async (event) => {
             `(${data.pages} pages, ${data.chunks} chunks).`;
 
         pdfFile.value = "";
-	await loadDocuments();
+        await loadDocuments();
 
     } catch (error) {
         uploadStatus.textContent =
             `Error: ${error.message}`;
+
     } finally {
         uploadButton.disabled = false;
     }
 });
 
 
-//
+// --------------------------------------------------
 // Version 4.5 - Document Selection
-//
+// Version 4.6 - Document Management
+// --------------------------------------------------
 
 const documentSelect = document.getElementById("document-select");
 const documentList = document.getElementById("document-list");
 const managementStatus = document.getElementById("management-status");
 
-// Load indexed PDF documents from FastAPI
 async function loadDocuments() {
     try {
         const response = await fetch("/documents");
@@ -203,9 +217,7 @@ async function loadDocuments() {
             documentSelect.value = selectedDocument;
         }
 
-	
-        // Version 4.6 - Display document management list
-
+        // Display document management list
         documentList.replaceChildren();
 
         if (data.documents.length === 0) {
@@ -239,8 +251,10 @@ async function loadDocuments() {
 
     } catch (error) {
         console.error("Could not load documents:", error);
+
         managementStatus.textContent =
             `Could not refresh documents: ${error.message}`;
+
         throw error;
     }
 }
@@ -249,9 +263,9 @@ async function loadDocuments() {
 loadDocuments();
 
 
-//
+// --------------------------------------------------
 // Version 4.6 - Delete Document
-//
+// --------------------------------------------------
 
 async function deleteDocument(filename) {
     const confirmed = window.confirm(
@@ -305,5 +319,3 @@ async function deleteDocument(filename) {
         });
     }
 }
-
-

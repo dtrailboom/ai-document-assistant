@@ -33,7 +33,7 @@ MAX_UPLOAD_SIZE = 10 * 1024 * 1024  # 10 MB
 app = FastAPI(
     title="AI Document Assistant API",
     description="Local RAG assistant using Ollama and ChromaDB",
-    version="4.5"
+    version="4.7"
 )
 
 app.mount(
@@ -240,7 +240,7 @@ def ask(request: QuestionRequest):
 
         query_options = {
             "query_embeddings": [embedding],
-            "n_results": min(3, count),
+            "n_results": min(5, count),
             "include": [
                 "documents",
                 "metadatas",
@@ -266,7 +266,7 @@ def ask(request: QuestionRequest):
                 "source": selected_document
             }
             query_options["n_results"] = min(
-                3,
+                5,
                 matching_count
             )
 
@@ -276,27 +276,29 @@ def ask(request: QuestionRequest):
         metadatas = results["metadatas"][0]
         distances = results["distances"][0]
 
+        
         context_parts = []
         sources = []
 
-        for document, metadata, distance in zip(
-            documents,
-            metadatas,
-            distances
+        for number, (document, metadata, distance) in enumerate(
+            zip(documents, metadatas, distances),
+            start=1
         ):
             context_parts.append(
-                f"Source: {metadata['source']}, "
+                f"[{number}] Source: {metadata['source']}, "
                 f"Page: {metadata['page']}\n"
                 f"{document}"
             )
 
             sources.append({
+                "number": number,
                 "document": metadata["source"],
                 "page": metadata["page"],
                 "distance": round(float(distance), 3)
             })
 
         context = "\n\n".join(context_parts)
+
 
         # 3. Generate an answer using local Qwen3
         response = ollama.chat(
@@ -305,13 +307,18 @@ def ask(request: QuestionRequest):
                 {
                     "role": "system",
                     "content": (
-                        "You are a document assistant. "
-                        "Answer only using the provided context. "
-                        "If the answer is not found in the "
-                        "context, say so. "
-                        "Do not invent facts. "
-                        "Cite document names and pages."
-                    )
+    			"You are a precise document assistant. "
+    			"Answer questions using only the provided document context. "
+    			"Do not use outside knowledge or invent facts. "
+    			"Each context passage has a source number such as [1] or [2]. "
+    			"Cite the relevant source numbers directly in your answer. "
+    			"Use citations like [1] or [2] after factual statements. "
+    			"Only cite source numbers that appear in the context. "
+    			"If the context does not contain enough information, "
+    			"clearly say that the answer cannot be found in the documents. "
+    			"Keep answers clear, accurate and concise."
+		    )
+
                 },
                 {
                     "role": "user",
