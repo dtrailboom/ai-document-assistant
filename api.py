@@ -135,6 +135,76 @@ def list_documents():
         }
 
 # --------------------------------------------------
+# Delete PDF document
+# --------------------------------------------------
+
+@app.delete("/documents/{filename}")
+def delete_document(filename: str):
+    """Delete a PDF and its indexed chunks."""
+
+    # 1. Validate filename
+    if (
+        not filename.lower().endswith(".pdf")
+        or filename in (".", "..")
+        or "/" in filename
+        or "\\" in filename
+        or filename != Path(filename).name
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid PDF filename."
+        )
+
+    file_path = DOCUMENTS_DIR / filename
+
+    # 2. Check that the PDF exists
+    if not file_path.is_file():
+        raise HTTPException(
+            status_code=404,
+            detail="PDF file not found."
+        )
+
+    try:
+        collection = client.get_collection("documents")
+
+        # 3. Find indexed chunks belonging to this PDF
+        results = collection.get(
+            where={"source": filename},
+            include=[]
+        )
+
+        chunk_ids = results["ids"]
+
+        if not chunk_ids:
+            raise HTTPException(
+                status_code=404,
+                detail="No indexed chunks found for this PDF."
+            )
+
+        # 4. Delete chunks from ChromaDB
+        collection.delete(ids=chunk_ids)
+
+        # 5. Delete the local PDF
+        file_path.unlink()
+
+        return {
+            "message": "Document deleted successfully.",
+            "filename": filename,
+            "deleted_chunks": len(chunk_ids)
+        }
+
+    except HTTPException:
+        raise
+
+    except Exception as error:
+        print(f"Delete error: {error}")
+
+        raise HTTPException(
+            status_code=500,
+            detail="Could not delete the document."
+        ) from error
+
+# --------------------------------------------------
 # RAG question answering
 # --------------------------------------------------
 

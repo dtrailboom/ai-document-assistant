@@ -202,3 +202,150 @@ footer {
     outline: 2px solid #2563eb;
     outline-offset: 2px;
 }
+
+
+/* Version 4.6 - Document Management */
+
+.management-section {
+    padding: 16px 24px;
+    background: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.management-section h2 {
+    margin: 0 0 8px;
+    font-size: 16px;
+    color: #1e293b;
+}
+
+.management-description {
+    margin: 0 0 12px;
+    font-size: 13px;
+    color: #64748b;
+}
+
+#document-list {
+    max-height: 180px;
+    overflow-y: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 9px;
+    background: #f8fafc;
+}
+
+.document-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 12px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.document-row:last-child {
+    border-bottom: none;
+}
+
+.document-name {
+    flex: 1;
+    min-width: 0;
+    font-size: 13px;
+    color: #334155;
+    overflow-wrap: anywhere;
+}
+
+.delete-button {
+    flex-shrink: 0;
+    background: #fee2e2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+    padding: 8px 12px;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.delete-button:hover {
+    background: #fecaca;
+}
+
+.delete-button:focus-visible {
+    outline: 2px solid #b91c1c;
+    outline-offset: 2px;
+}
+
+.delete-button:disabled {
+    opacity: 0.5;
+    cursor: wait;
+}
+
+#management-status {
+    margin: 10px 0 0;
+    font-size: 13px;
+    color: #475569;
+}
+
+#management-status:empty {
+    display: none;
+}
+
+/* Keep the chat usable with the management panel */
+
+.chat {
+    min-height: 0;
+}
+
+
+/* Version 4.6 - Layout Fix */
+
+.app {
+    height: 95vh;
+    min-height: 0;
+}
+
+.header,
+.upload-section,
+.document-section,
+.management-section,
+.chat-form,
+footer {
+    flex-shrink: 0;
+}
+
+.management-section {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+#document-list {
+    max-height: 120px;
+    overflow-y: auto;
+}
+
+.chat {
+    flex: 1 1 auto;
+    min-height: 100px;
+    overflow-y: auto;
+}
+
+@media (max-height: 750px) {
+    .header {
+        padding: 12px 24px;
+    }
+
+    .upload-section,
+    .document-section,
+    .management-section {
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+
+    #document-list {
+        max-height: 80px;
+    }
+
+    .chat-form {
+        padding: 12px 24px;
+    }
+}

@@ -158,6 +158,8 @@ uploadForm.addEventListener("submit", async (event) => {
 //
 
 const documentSelect = document.getElementById("document-select");
+const documentList = document.getElementById("document-list");
+const managementStatus = document.getElementById("management-status");
 
 // Load indexed PDF documents from FastAPI
 async function loadDocuments() {
@@ -201,11 +203,107 @@ async function loadDocuments() {
             documentSelect.value = selectedDocument;
         }
 
+	
+        // Version 4.6 - Display document management list
+
+        documentList.replaceChildren();
+
+        if (data.documents.length === 0) {
+            const emptyMessage = document.createElement("p");
+            emptyMessage.textContent = "No documents indexed yet.";
+            documentList.appendChild(emptyMessage);
+        }
+
+        for (const filename of data.documents) {
+            const row = document.createElement("div");
+            row.className = "document-row";
+
+            const name = document.createElement("span");
+            name.className = "document-name";
+            name.textContent = filename;
+
+            const deleteButton = document.createElement("button");
+            deleteButton.type = "button";
+            deleteButton.className = "delete-button";
+            deleteButton.textContent = "Delete";
+
+            deleteButton.addEventListener("click", () => {
+                deleteDocument(filename);
+            });
+
+            row.appendChild(name);
+            row.appendChild(deleteButton);
+
+            documentList.appendChild(row);
+        }
+
     } catch (error) {
         console.error("Could not load documents:", error);
+        managementStatus.textContent =
+            `Could not refresh documents: ${error.message}`;
+        throw error;
     }
 }
 
 // Load document list when page opens
 loadDocuments();
+
+
+//
+// Version 4.6 - Delete Document
+//
+
+async function deleteDocument(filename) {
+    const confirmed = window.confirm(
+        `Are you sure you want to delete "${filename}"?\n\n` +
+        "This will permanently remove the PDF and its indexed chunks."
+    );
+
+    if (!confirmed) {
+        return;
+    }
+
+    managementStatus.textContent = `Deleting ${filename}...`;
+
+    // Disable delete buttons during deletion
+    const deleteButtons = document.querySelectorAll(".delete-button");
+
+    deleteButtons.forEach(button => {
+        button.disabled = true;
+    });
+
+    try {
+        const response = await fetch(
+            `/documents/${encodeURIComponent(filename)}`,
+            {
+                method: "DELETE"
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                data.detail || `HTTP ${response.status}`
+            );
+        }
+
+        managementStatus.textContent =
+            `Successfully deleted ${data.filename} ` +
+            `(${data.deleted_chunks} chunks removed).`;
+
+        // Refresh document selection and management list
+        await loadDocuments();
+
+    } catch (error) {
+        managementStatus.textContent =
+            `Error: ${error.message}`;
+
+    } finally {
+        document.querySelectorAll(".delete-button").forEach(button => {
+            button.disabled = false;
+        });
+    }
+}
+
 
